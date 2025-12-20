@@ -1,0 +1,25 @@
+@import "tailwindcss";
+@layer components {
+  .input {
+    @apply w-full px-4 py-2
+    border border-gray-300 rounded-lg
+    bg-white text-gray-800
+    transition-all duration-300 ease-in-out
+    focus:outline-none
+    focus:border-blue-500
+    focus:ring-2 focus:ring-blue-200
+    hover:border-blue-400;
+  }
+
+  .eye-btn {
+    @apply absolute inset-y-0 right-3 flex items-center
+    text-gray-400
+    transition-colors duration-200
+    hover:text-blue-600;
+  }
+}
+.error {
+  color: #dc2626;
+  font-size: 0.75rem;
+  margin-top: 4px;
+}
