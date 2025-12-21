@@ -1,10 +1,17 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
+import axios from "axios";
+
+/* 🔹 Material UI */
+import LinearProgress from "@mui/material/LinearProgress";
+import Box from "@mui/material/Box";
 
 const Registerpage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [loading, setLoading] = useState(false); // ✅ added
+  const navigate = useNavigate();
 
   const [data, setData] = useState({
     collegeId: "",
@@ -55,7 +62,6 @@ const Registerpage = () => {
     fetchCodes();
   }, []);
 
-  /* Input change handler */
   const handleChange = (field, value) => {
     setData((prev) => ({ ...prev, [field]: value }));
     setErrors((prev) => ({ ...prev, [field]: "" }));
@@ -78,8 +84,7 @@ const Registerpage = () => {
 
     if (!data.countryCode) e.countryCode = "Select country code";
 
-    if (!data.contactNumber)
-      e.contactNumber = "Contact number required";
+    if (!data.contactNumber) e.contactNumber = "Contact number required";
     else if (!/^\d{10}$/.test(data.contactNumber))
       e.contactNumber = "Must be 10 digits";
 
@@ -88,8 +93,7 @@ const Registerpage = () => {
         data.password
       )
     )
-      e.password =
-        "Min 8 chars, 1 uppercase, 1 lowercase, 1 number & 1 symbol";
+      e.password = "Min 8 chars, 1 uppercase, 1 lowercase, 1 number & 1 symbol";
 
     if (data.password !== data.confirmPassword)
       e.confirmPassword = "Passwords do not match";
@@ -102,15 +106,52 @@ const Registerpage = () => {
     e.preventDefault();
     if (!validate()) return;
 
+    setLoading(true); // ✅ start progress
+
     const payload = {
-      ...data,
+      collegeId: data.collegeId,
+      collegeName: data.collegeName,
+      collegeType: data.collegeType,
+      country: data.country,
+      stateOrProvince: data.stateOrProvince,
+      city: data.city,
+      postalCode: data.postalCode,
+      collegeEmail: data.collegeEmail,
       contactNumber: data.countryCode + data.contactNumber,
+      password: data.password,
     };
 
-    console.log("REGISTER DATA:", payload);
+    axios
+      .post("http://127.0.0.1:8000/registerCollege", payload)
+      .then((res) => {
+        setLoading(false); // ✅ stop progress
+        alert(res.data.message);
+        navigate("/");
+      })
+      .catch((err) => {
+        setLoading(false);
+
+        const msg = err.response?.data?.detail;
+
+        if (msg === "Email is Already Registered") {
+          setErrors((prev) => ({
+            ...prev,
+            collegeEmail: msg,
+          }));
+        } else if (msg === "Phone number already exists") {
+          setErrors((prev) => ({
+            ...prev,
+            contactNumber: msg,
+          }));
+        } else {
+          setErrors((prev) => ({
+            ...prev,
+            password: msg,
+          }));
+        }
+      });
   };
 
-  /* Tailwind helpers */
   const baseInput =
     "w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2";
   const errorInput = "border-red-500 focus:ring-red-300";
@@ -120,220 +161,212 @@ const Registerpage = () => {
     `${baseInput} ${errors[field] ? errorInput : normalInput}`;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="w-full max-w-4xl bg-white p-8 rounded-xl shadow">
-        <h2 className="text-xl font-bold text-center mb-6">
-          College Registration
-        </h2>
-
-        <form onSubmit={handleRegister} className="space-y-5">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* College Name */}
-            <div>
-              <input
-                placeholder="College Name"
-                className={inputClass("collegeName")}
-                onChange={(e) =>
-                  handleChange("collegeName", e.target.value)
-                }
-              />
-              {errors.collegeName && (
-                <p className="text-xs text-red-500 mt-1">
-                  {errors.collegeName}
-                </p>
-              )}
-            </div>
-
-            {/* College Type */}
-            <div>
-              <select
-                className={inputClass("collegeType")}
-                onChange={(e) =>
-                  handleChange("collegeType", e.target.value)
-                }
-              >
-                <option value="">Select College Type</option>
-                <option value="Public">Public</option>
-                <option value="Autonomous">Autonomous</option>
-              </select>
-              {errors.collegeType && (
-                <p className="text-xs text-red-500 mt-1">
-                  {errors.collegeType}
-                </p>
-              )}
-            </div>
-
-            {/* Country */}
-            <div>
-              <input
-                placeholder="Country"
-                className={inputClass("country")}
-                onChange={(e) =>
-                  handleChange("country", e.target.value)
-                }
-              />
-              {errors.country && (
-                <p className="text-xs text-red-500 mt-1">
-                  {errors.country}
-                </p>
-              )}
-            </div>
-
-            {/* State */}
-            <div>
-              <input
-                placeholder="State / Province"
-                className={inputClass("stateOrProvince")}
-                onChange={(e) =>
-                  handleChange("stateOrProvince", e.target.value)
-                }
-              />
-              {errors.stateOrProvince && (
-                <p className="text-xs text-red-500 mt-1">
-                  {errors.stateOrProvince}
-                </p>
-              )}
-            </div>
-
-            {/* City */}
-            <div>
-              <input
-                placeholder="City"
-                className={inputClass("city")}
-                onChange={(e) =>
-                  handleChange("city", e.target.value)
-                }
-              />
-              {errors.city && (
-                <p className="text-xs text-red-500 mt-1">
-                  {errors.city}
-                </p>
-              )}
-            </div>
-
-            {/* Postal Code */}
-            <div>
-              <input
-                placeholder="Postal Code"
-                className={inputClass("postalCode")}
-                onChange={(e) =>
-                  handleChange("postalCode", e.target.value)
-                }
-              />
-              {errors.postalCode && (
-                <p className="text-xs text-red-500 mt-1">
-                  {errors.postalCode}
-                </p>
-              )}
-            </div>
-
-            {/* Email */}
-            <div>
-              <input
-                placeholder="Official Email"
-                className={inputClass("collegeEmail")}
-                onChange={(e) =>
-                  handleChange("collegeEmail", e.target.value)
-                }
-              />
-              {errors.collegeEmail && (
-                <p className="text-xs text-red-500 mt-1">
-                  {errors.collegeEmail}
-                </p>
-              )}
-            </div>
-
-            {/* Contact */}
-            <div className="flex gap-2">
-              <select
-                className={inputClass("countryCode")}
-                onChange={(e) =>
-                  handleChange("countryCode", e.target.value)
-                }
-              >
-                <option value="">Code</option>
-                {countryCodes.map((c, i) => (
-                  <option key={i} value={c.code}>
-                    {c.name} ({c.code})
-                  </option>
-                ))}
-              </select>
-
-              <input
-                placeholder="10-digit number"
-                className={inputClass("contactNumber")}
-                onChange={(e) =>
-                  handleChange("contactNumber", e.target.value)
-                }
-              />
-            </div>
-
-            {/* Password */}
-            <div>
-              <div className="relative">
+    <>
+      {loading && (
+        <Box sx={{ width: "100%", position: "fixed", top: 0, zIndex: 50 }}>
+          <LinearProgress />
+        </Box>
+      )}
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <div className="w-full max-w-4xl bg-white p-8 rounded-xl shadow">
+          <h2 className="text-xl font-bold text-center mb-6">
+            College Registration
+          </h2>
+          <form onSubmit={handleRegister} className="space-y-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* College Name */}
+              <div>
                 <input
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Password"
-                  className={`${inputClass("password")} pr-10`}
+                  placeholder="College Name"
+                  className={inputClass("collegeName")}
+                  onChange={(e) => handleChange("collegeName", e.target.value)}
+                />
+                {errors.collegeName && (
+                  <p className="text-xs text-red-500 mt-1">
+                    {errors.collegeName}
+                  </p>
+                )}
+              </div>
+
+              {/* College Type */}
+              <div>
+                <select
+                  className={inputClass("collegeType")}
+                  onChange={(e) => handleChange("collegeType", e.target.value)}
+                >
+                  <option value="">Select College Type</option>
+                  <option value="Public">Public</option>
+                  <option value="Autonomous">Autonomous</option>
+                </select>
+                {errors.collegeType && (
+                  <p className="text-xs text-red-500 mt-1">
+                    {errors.collegeType}
+                  </p>
+                )}
+              </div>
+
+              {/* Country */}
+              <div>
+                <input
+                  placeholder="Country"
+                  className={inputClass("country")}
+                  onChange={(e) => handleChange("country", e.target.value)}
+                />
+                {errors.country && (
+                  <p className="text-xs text-red-500 mt-1">{errors.country}</p>
+                )}
+              </div>
+
+              {/* State */}
+              <div>
+                <input
+                  placeholder="State / Province"
+                  className={inputClass("stateOrProvince")}
                   onChange={(e) =>
-                    handleChange("password", e.target.value)
+                    handleChange("stateOrProvince", e.target.value)
                   }
                 />
-                <button
-                  type="button"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
+                {errors.stateOrProvince && (
+                  <p className="text-xs text-red-500 mt-1">
+                    {errors.stateOrProvince}
+                  </p>
+                )}
               </div>
-              {errors.password && (
-                <p className="text-xs text-red-500 mt-1">
-                  {errors.password}
-                </p>
-              )}
-            </div>
 
-            {/* Confirm Password */}
-            <div>
-              <div className="relative">
+              {/* City */}
+              <div>
                 <input
-                  type={showConfirm ? "text" : "password"}
-                  placeholder="Confirm Password"
-                  className={`${inputClass("confirmPassword")} pr-10`}
-                  onChange={(e) =>
-                    handleChange("confirmPassword", e.target.value)
-                  }
+                  placeholder="City"
+                  className={inputClass("city")}
+                  onChange={(e) => handleChange("city", e.target.value)}
                 />
-                <button
-                  type="button"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
-                  onClick={() => setShowConfirm(!showConfirm)}
-                >
-                  {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
+                {errors.city && (
+                  <p className="text-xs text-red-500 mt-1">{errors.city}</p>
+                )}
               </div>
-              {errors.confirmPassword && (
-                <p className="text-xs text-red-500 mt-1">
-                  {errors.confirmPassword}
-                </p>
-              )}
+
+              {/* Postal Code */}
+              <div>
+                <input
+                  placeholder="Postal Code"
+                  className={inputClass("postalCode")}
+                  onChange={(e) => handleChange("postalCode", e.target.value)}
+                />
+                {errors.postalCode && (
+                  <p className="text-xs text-red-500 mt-1">
+                    {errors.postalCode}
+                  </p>
+                )}
+              </div>
+
+              {/* Email */}
+              <div>
+                <input
+                  placeholder="Official Email"
+                  className={inputClass("collegeEmail")}
+                  onChange={(e) => handleChange("collegeEmail", e.target.value)}
+                />
+                {errors.collegeEmail && (
+                  <p className="text-xs text-red-500 mt-1">
+                    {errors.collegeEmail}
+                  </p>
+                )}
+              </div>
+
+              {/* Contact */}
+              <div>
+                <div className="flex gap-2">
+                  <select
+                    className={inputClass("countryCode")}
+                    onChange={(e) =>
+                      handleChange("countryCode", e.target.value)
+                    }
+                  >
+                    <option value="">Code</option>
+                    {countryCodes.map((c, i) => (
+                      <option key={i} value={c.code}>
+                        {c.name} ({c.code})
+                      </option>
+                    ))}
+                  </select>
+                  <input
+                    placeholder="10-digit number"
+                    className={inputClass("contactNumber")}
+                    onChange={(e) =>
+                      handleChange("contactNumber", e.target.value)
+                    }
+                  />
+                </div>
+                {errors.contactNumber && (
+                  <p className="text-xs text-red-500 mt-1">
+                    {errors.contactNumber}
+                  </p>
+                )}
+              </div>
+
+              {/* Password */}
+              <div>
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Password"
+                    className={`${inputClass("password")} pr-10`}
+                    onChange={(e) => handleChange("password", e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+                {errors.password && (
+                  <p className="text-xs text-red-500 mt-1">{errors.password}</p>
+                )}
+              </div>
+
+              {/* Confirm Password */}
+              <div>
+                <div className="relative">
+                  <input
+                    type={showConfirm ? "text" : "password"}
+                    placeholder="Confirm Password"
+                    className={`${inputClass("confirmPassword")} pr-10`}
+                    onChange={(e) =>
+                      handleChange("confirmPassword", e.target.value)
+                    }
+                  />
+                  <button
+                    type="button"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+                    onClick={() => setShowConfirm(!showConfirm)}
+                  >
+                    {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+                {errors.confirmPassword && (
+                  <p className="text-xs text-red-500 mt-1">
+                    {errors.confirmPassword}
+                  </p>
+                )}
+              </div>
             </div>
-          </div>
 
-          <button className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition">
-            Register
-          </button>
+            <button className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition">
+              Register
+            </button>
 
-          <p className="text-center text-sm">
-            Already have an account?{" "}
-            <Link to="/" className="text-blue-600 hover:underline">
-              Login
-            </Link>
-          </p>
-        </form>
+            <p className="text-center text-sm">
+              Already have an account?{" "}
+              <Link to="/" className="text-blue-600 hover:underline">
+                Login
+              </Link>
+            </p>
+          </form>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 
