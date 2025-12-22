@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import axios from "axios";
-
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 // 🔹 Material UI
 import LinearProgress from "@mui/material/LinearProgress";
 import Box from "@mui/material/Box";
@@ -17,7 +17,7 @@ const Loginpage = () => {
   const navigate = useNavigate();
 
   const handleLogin = (e) => {
-    e.preventDefault();
+    e.preventDefault(); 
 
     if (!collegeEmail || !password) {
       setErr("Please fill in all fields");
@@ -28,13 +28,13 @@ const Loginpage = () => {
     setErr(null);
 
     axios
-      .post("http://127.0.0.1:8000/DashboardLogin", {
+      .post(`${BACKEND_URL}/DashboardLogin`, {
         collegeEmail,
         password,
       })
       .then((res) => {
         setLoading(false);
-        navigate("/"); // dashboard
+        navigate("/dashboard"); // dashboard
       })
       .catch((error) => {
         setLoading(false);

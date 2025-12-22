@@ -4,7 +4,7 @@ import axios from "axios";
 import { Eye, EyeOff } from "lucide-react";
 import LinearProgress from "@mui/material/LinearProgress";
 import Box from "@mui/material/Box";
-
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 const Forgetpassword = () => {
   const navigate = useNavigate();
 
@@ -21,23 +21,23 @@ const Forgetpassword = () => {
   const [progress, setProgress] = useState(0);
   const [loading, setLoading] = useState(false);
 
-  // 🔹 Progress animation
+  // 🔹 Progress animation ONLY
   useEffect(() => {
     if (!loading) return;
 
     const timer = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(timer);
-          navigate("/");
-          return 100;
-        }
-        return prev + 10;
-      });
+      setProgress((prev) => Math.min(prev + 10, 100));
     }, 200);
 
     return () => clearInterval(timer);
-  }, [loading, navigate]);
+  }, [loading]);
+
+  // 🔹 Navigation in separate effect ✅
+  useEffect(() => {
+    if (progress === 100) {
+      navigate("/");
+    }
+  }, [progress, navigate]);
 
   const handleReset = (e) => {
     e.preventDefault();
@@ -53,14 +53,14 @@ const Forgetpassword = () => {
     }
 
     axios
-      .post("http://127.0.0.1:8000/forget-password", {
+      .post(`${BACKEND_URL}/forget-password`, {
         collegeEmail,
-        password,
+        newPassword: password, // ✅ backend schema match
       })
       .then((res) => {
         setError(null);
         setSuccess(res.data.message);
-        setLoading(true); // ✅ start progress
+        setLoading(true); // start progress
       })
       .catch((err) => {
         setSuccess(null);
@@ -75,21 +75,18 @@ const Forgetpassword = () => {
           Reset Password
         </h2>
 
-        {/* ❌ Error */}
         {error && (
           <p className="text-center text-sm text-red-600 mb-3">
             {error}
           </p>
         )}
 
-        {/* ✅ Success */}
         {success && (
           <p className="text-center text-sm text-green-600 mb-3">
             {success}
           </p>
         )}
 
-        {/* 🔄 Linear Progress */}
         {loading && (
           <Box sx={{ width: "100%", mb: 2 }}>
             <LinearProgress variant="determinate" value={progress} />
@@ -142,7 +139,7 @@ const Forgetpassword = () => {
 
           <button
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition disabled:opacity-60"
+            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 disabled:opacity-60"
           >
             Reset Password
           </button>
