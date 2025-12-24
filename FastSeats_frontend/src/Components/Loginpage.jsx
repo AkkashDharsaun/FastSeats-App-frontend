@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import axios from "axios";
@@ -15,9 +15,21 @@ const Loginpage = () => {
   const [loading, setLoading] = useState(false); // ✅ NEW
 
   const navigate = useNavigate();
+  useEffect(() => {
+    const storedCollege = localStorage.getItem("college");
 
+    if (storedCollege) {
+      const college = JSON.parse(storedCollege);
+      if (college.isRegistered && college.isActive) {
+        navigate("/dashboard"); // ✅ direct dashboard
+      } else if (college.isActive) {
+        sessionStorage.setItem("paymentDone", "true");
+        navigate("/register");
+      }
+    }
+  }, []);
   const handleLogin = (e) => {
-    e.preventDefault(); 
+    e.preventDefault();
 
     if (!collegeEmail || !password) {
       setErr("Please fill in all fields");
@@ -34,6 +46,7 @@ const Loginpage = () => {
       })
       .then((res) => {
         setLoading(false);
+        localStorage.setItem("college", JSON.stringify(res.data));
         navigate("/dashboard"); // dashboard
       })
       .catch((error) => {
@@ -46,7 +59,9 @@ const Loginpage = () => {
     <>
       {/* 🔵 TOP LINEAR PROGRESS */}
       {loading && (
-        <Box sx={{ width: "100%", position: "fixed", top: 0, left: 0, zIndex: 50 }}>
+        <Box
+          sx={{ width: "100%", position: "fixed", top: 0, left: 0, zIndex: 50 }}
+        >
           <LinearProgress />
         </Box>
       )}
@@ -114,7 +129,7 @@ const Loginpage = () => {
 
             <p className="text-center text-sm">
               Don’t have an account?{" "}
-              <Link to="/register" className="text-blue-600 hover:underline">
+              <Link to="/payment" className="text-blue-600 hover:underline">
                 Register
               </Link>
             </p>
