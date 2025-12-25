@@ -1,16 +1,13 @@
-// authfiles/AuthProtectedRoute.jsx
-import { useContext } from "react";
 import { Navigate } from "react-router-dom";
-import { CollegeContext } from "../Context/CollegeProvider";
 
-const AuthProtectedRoute = ({ children }) => {
-  const { college } = useContext(CollegeContext);
+const PaymentProtectedRoute = ({ children }) => {
+  const paymentDone = sessionStorage.getItem("paymentDone");
 
-  if (!college || !college.isActive) {
-    return <Navigate to="/" replace />;
+  if (paymentDone !== "true") {
+    return <Navigate to="/payment" replace />;
   }
 
   return children;
 };
 
-export default AuthProtectedRoute;
+export default PaymentProtectedRoute;
