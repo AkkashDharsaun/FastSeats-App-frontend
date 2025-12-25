@@ -1,49 +1,57 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+
+/* Pages */
 import DashboardLogin from "./Components/Loginpage";
 import Register from "./pages/RegisterPage";
 import Forgetpassword from "./pages/Forgetpassword";
 import Dashboard from "./pages/Dashboard";
 import PaymentPage from "./Paymentpage/payment";
-import ProtectedRoute from "./authfiles/ProtectedRoute";
-import Layout from "./Layouts/Layout";
 import Logout from "./Components/Logout";
+
+/* Layout */
+import Layout from "./Layouts/Layout";
+
+/* Protected Routes */
+import AuthProtectedRoute from "./authfiles/ProtectedRoute";
+import PaymentProtectedRoute from "./authfiles/PaymentProtectedRoute";
 
 const App = () => {
   return (
     <BrowserRouter>
-  <Routes>
-    {/* Public */}
-    <Route path="/" element={<DashboardLogin />} />
-    <Route path="/payment" element={<PaymentPage />} />
-    <Route path="/forgetpassword" element={<Forgetpassword />} />
+      <Routes>
+        {/* ================= PUBLIC ROUTES ================= */}
+        <Route path="/" element={<DashboardLogin />} />
+        <Route path="/payment" element={<PaymentPage />} />
+        <Route path="/forgetpassword" element={<Forgetpassword />} />
 
-    {/* Protected register */}
-    <Route
-      path="/register"
-      element={
-        <ProtectedRoute>
-          <Register />
-        </ProtectedRoute>
-      }
-    />
+        {/* ================= PAYMENT PROTECTED ================= */}
+        {/* Only payment success users can access register */}
+        <Route
+          path="/register"
+          element={
+            <PaymentProtectedRoute>
+              <Register />
+            </PaymentProtectedRoute>
+          }
+        />
 
-    {/* Dashboard */}
-    <Route
-      path="/dashboard"
-      element={
-        <ProtectedRoute>
-          <Layout />
-        </ProtectedRoute>
-      }
-    >
-      <Route index element={<Dashboard />} />
-    </Route>
+        {/* ================= AUTH PROTECTED ================= */}
+        {/* Only logged-in & active colleges */}
+        <Route
+          path="/dashboard"
+          element={
+            <AuthProtectedRoute>
+              <Layout />
+            </AuthProtectedRoute>
+          }
+        >
+          <Route index element={<Dashboard />} />
+        </Route>
 
-    {/* Logout */}
-    <Route path="/logout" element={<Logout />} />
-  </Routes>
-</BrowserRouter>
-
+        {/* ================= LOGOUT ================= */}
+        <Route path="/logout" element={<Logout />} />
+      </Routes>
+    </BrowserRouter>
   );
 };
 
