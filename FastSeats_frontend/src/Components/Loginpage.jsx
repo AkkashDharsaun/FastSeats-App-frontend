@@ -5,6 +5,7 @@ import axios from "axios";
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 // 🔹 Material UI
 import LinearProgress from "@mui/material/LinearProgress";
+import { CollegeContext } from "../Context/CollegeProvider";
 import Box from "@mui/material/Box";
 
 const Loginpage = () => {
@@ -13,7 +14,7 @@ const Loginpage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [err, setErr] = useState(null);
   const [loading, setLoading] = useState(false); // ✅ NEW
-
+  const { setCollege } = useContext(CollegeContext); //
   const navigate = useNavigate();
   useEffect(() => {
     const storedCollege = localStorage.getItem("college");
@@ -31,12 +32,7 @@ const Loginpage = () => {
   const handleLogin = (e) => {
     e.preventDefault();
 
-    if (!collegeEmail || !password) {
-      setErr("Please fill in all fields");
-      return;
-    }
-
-    setLoading(true); // 🔄 start progress
+    setLoading(true);
     setErr(null);
 
     axios
@@ -46,14 +42,22 @@ const Loginpage = () => {
       })
       .then((res) => {
         setLoading(false);
+
+        // ✅ SET CONTEXT FIRST
+        setCollege(res.data);
+
+        // ✅ STORE FOR REFRESH
         localStorage.setItem("college", JSON.stringify(res.data));
-        navigate("/dashboard"); // dashboard
+
+        // ✅ REDIRECT
+        navigate("/dashboard", { replace: true });
       })
       .catch((error) => {
         setLoading(false);
         setErr(error.response?.data?.detail || "Something went wrong");
       });
   };
+
 
   return (
     <>
