@@ -1,4 +1,3 @@
-// authfiles/AuthProtectedRoute.jsx
 import { useContext } from "react";
 import { Navigate } from "react-router-dom";
 import { CollegeContext } from "../Context/CollegeProvider";
