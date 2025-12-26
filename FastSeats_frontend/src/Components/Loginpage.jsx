@@ -1,12 +1,13 @@
-import React, { useState,useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import axios from "axios";
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
-// 🔹 Material UI
 import LinearProgress from "@mui/material/LinearProgress";
-import { CollegeContext } from "../Context/CollegeProvider";
 import Box from "@mui/material/Box";
+import { CollegeContext } from "../Context/CollegeProvider";
+
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
 
 const Loginpage = () => {
   const [collegeEmail, setCollegeEmail] = useState("");
